@@ -78,7 +78,7 @@ func CrawlGo() {
 	log.Infoln("Now proceed proxy health check...")
 	if config.Config.HealthCheckTimeout > 0 {
 		healthcheck.DelayTimeout = time.Second * time.Duration(config.Config.HealthCheckTimeout)
-		log.Infoln("CONF: Health Check timeout is set to %d seconds", config.Config.HealthCheckTimeout)
+		log.Infoln("CONF: Health check timeout is set to %d seconds", config.Config.HealthCheckTimeout)
 	}
 	proxies = healthcheck.CleanBadProxiesWithGrpool(proxies)
 

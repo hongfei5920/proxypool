@@ -6,7 +6,7 @@ Clash客户端支持：
 ## New
 
 2021-04-20
-- 添加自定义检测Timeout，配置文件参数改变，healthCheck包接口略微增加
+- 添加自定义healcheck timeout，因此配置文件参数改变，healthCheck包接口略微增加
 - 更新Clash依赖
 
 2021-03-25(v0.6.1)

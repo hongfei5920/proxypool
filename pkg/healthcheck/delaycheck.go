@@ -12,8 +12,6 @@ import (
 	"github.com/Dreamacro/clash/adapters/outbound"
 )
 
-const defaultURLTestTimeout = time.Second * 5
-
 func CleanBadProxiesWithGrpool(proxies []proxy.Proxy) (cproxies []proxy.Proxy) {
 	// Note: Grpool实现对go并发管理的封装，主要是在数据量大时减少内存占用，不会提高效率。
 	pool := grpool.NewPool(500, 200)
@@ -23,6 +21,8 @@ func CleanBadProxiesWithGrpool(proxies []proxy.Proxy) (cproxies []proxy.Proxy) {
 	m := sync.Mutex{}
 
 	pool.WaitCount(len(proxies))
+	doneCount := 0
+	dcm := sync.Mutex{}
 	// 线程：延迟测试，测试过程通过grpool的job并发
 	go func() {
 		for _, p := range proxies {
@@ -45,6 +45,13 @@ func CleanBadProxiesWithGrpool(proxies []proxy.Proxy) (cproxies []proxy.Proxy) {
 					}
 					m.Unlock()
 				}
+
+				// Progress status
+				dcm.Lock()
+				doneCount++
+				progress := float64(doneCount) * 100 / float64(len(proxies))
+				fmt.Printf("\r\t[%5.1f%% DONE]", progress)
+				dcm.Unlock()
 			}
 		}
 	}()
@@ -65,6 +72,7 @@ func CleanBadProxiesWithGrpool(proxies []proxy.Proxy) (cproxies []proxy.Proxy) {
 				okMap[ps.Id] = struct{}{}
 			}
 		case <-done:
+			fmt.Println()                            // Progress status ends
 			cproxies = make(proxy.ProxyList, 0, 500) // 定义返回的proxylist
 			// check usable proxy
 			for i, _ := range proxies {

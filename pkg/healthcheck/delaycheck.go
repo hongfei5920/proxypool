@@ -1,8 +1,10 @@
 package healthcheck
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Sansui233/proxypool/log"
 	"github.com/Sansui233/proxypool/pkg/proxy"
 	"sync"
 	"time"
@@ -66,13 +68,9 @@ func testDelay(p proxy.Proxy) (delay uint16, err error) {
 	if err != nil {
 		return
 	}
-
 	pmap["port"] = int(pmap["port"].(float64))
 	if p.TypeName() == "vmess" {
 		pmap["alterId"] = int(pmap["alterId"].(float64))
-		if network, ok := pmap["network"]; ok && network.(string) == "h2" {
-			return 0, nil // todo 暂无方法测试h2的延迟，clash对于h2的connection会阻塞
-		}
 	}
 
 	clashProxy, err := outbound.ParseProxy(pmap)
@@ -81,13 +79,26 @@ func testDelay(p proxy.Proxy) (delay uint16, err error) {
 		return 0, err
 	}
 
-	sTime := time.Now()
-	err = HTTPHeadViaProxy(clashProxy, "http://www.gstatic.com/generate_204")
-	if err != nil {
-		return 0, err
-	}
-	fTime := time.Now()
-	delay = uint16(fTime.Sub(sTime) / time.Millisecond)
+	// Custom context time to avoid unexpected connection block due to dependency
+	respC := make(chan uint16)
+	defer close(respC)
+	go func() {
+		sTime := time.Now()
+		err = HTTPHeadViaProxy(clashProxy, "http://www.gstatic.com/generate_204")
+		if err != nil {
+			respC <- 0
+			return
+		}
+		fTime := time.Now()
+		d := uint16(fTime.Sub(sTime) / time.Millisecond)
+		respC <- d
+	}()
 
-	return delay, nil
+	select {
+	case delay = <-respC:
+		return delay, nil
+	case <-time.After(DelayTimeout * 2):
+		log.Debugln("unexpected delay check timeout error in proxy %s\n", p.Link())
+		return 0, context.DeadlineExceeded
+	}
 }

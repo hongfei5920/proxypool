@@ -5,6 +5,9 @@ Clash客户端支持：
 
 ## New
 
+2021-04-29
+- delaycheck中实现强制超时取消，以避免由于依赖问题引起的阻塞
+
 2021-04-20(v0.7.0)
 - 添加自定义healcheck timeout，因此配置文件参数改变，healthCheck包接口略微增加
 - 修改中转节点的Query接口

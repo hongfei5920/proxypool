@@ -2,6 +2,9 @@ package app
 
 import (
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/Sansui233/proxypool/config"
 	"github.com/Sansui233/proxypool/internal/cache"
 	"github.com/Sansui233/proxypool/internal/database"
@@ -10,8 +13,6 @@ import (
 	"github.com/Sansui233/proxypool/pkg/healthcheck"
 	"github.com/Sansui233/proxypool/pkg/provider"
 	"github.com/Sansui233/proxypool/pkg/proxy"
-	"sync"
-	"time"
 )
 
 var location, _ = time.LoadLocation("PRC")
@@ -55,7 +56,7 @@ func CrawlGo() {
 
 	// Clean Clash unsupported proxy because health check depends on clash
 	proxies = provider.Clash{
-		provider.Base{
+		Base: provider.Base{
 			Proxies: &proxies,
 		},
 	}.CleanProxies()
@@ -90,14 +91,14 @@ func CrawlGo() {
 
 	// Relay check and rename
 	healthcheck.RelayCheck(proxies)
-	for i, _ := range proxies {
+	for i := range proxies {
 		if s, ok := healthcheck.ProxyStats.Find(proxies[i]); ok {
-			if s.Relay == true {
+			if s.Relay {
 				_, c, e := geoIp.GeoIpDB.Find(s.OutIp)
 				if e == nil {
 					proxies[i].SetName(fmt.Sprintf("Relay_%s-%s", proxies[i].BaseInfo().Name, c))
 				}
-			} else if s.Pool == true {
+			} else if s.Pool {
 				proxies[i].SetName(fmt.Sprintf("Pool_%s", proxies[i].BaseInfo().Name))
 			}
 		}
@@ -116,12 +117,12 @@ func CrawlGo() {
 	// 测速
 	speedTestNew(proxies)
 	cache.SetString("clashproxies", provider.Clash{
-		provider.Base{
+		Base: provider.Base{
 			Proxies: &proxies,
 		},
 	}.Provide()) // update static string provider
 	cache.SetString("surgeproxies", provider.Surge{
-		provider.Base{
+		Base: provider.Base{
 			Proxies: &proxies,
 		},
 	}.Provide())

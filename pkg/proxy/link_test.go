@@ -2,9 +2,10 @@ package proxy
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/Sansui233/proxypool/pkg/tool"
 	"github.com/ghodss/yaml"
-	"testing"
 )
 
 func TestSSLink(t *testing.T) {
@@ -79,6 +80,9 @@ func TestNewVmessParser(t *testing.T) {
 		return
 	}
 	vmessJson, err := mapStrInter2VmessLinkJson(jsonMap)
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println(vmessJson)
 }
 

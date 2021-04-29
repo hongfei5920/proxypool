@@ -5,16 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Dreamacro/clash/adapters/outbound"
-	C "github.com/Dreamacro/clash/constant"
-	"github.com/Sansui233/proxypool/log"
-	"github.com/Sansui233/proxypool/pkg/proxy"
-	"github.com/ivpusic/grpool"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Dreamacro/clash/adapters/outbound"
+	C "github.com/Dreamacro/clash/constant"
+	"github.com/Sansui233/proxypool/log"
+	"github.com/Sansui233/proxypool/pkg/proxy"
+	"github.com/ivpusic/grpool"
 )
 
 // SpeedTestAll tests speed of a group of proxies. Results are stored in ProxyStats
@@ -170,9 +171,6 @@ func ProxySpeedTest(p proxy.Proxy) (speedResult float64, err error) {
 	if user == nil {
 		return -1, errors.New("fetch User Infoln failed in go routine") // 我真的不会用channel抛出err，go routine的不明原因阻塞我服了。下面的两个BUG现在都不知道原因，逻辑上不该出现的
 	}
-	if &serverList == nil {
-		return -1, errors.New("unexpected error when fetching serverlist: addr of var serverlist nil")
-	}
 	if len(serverList.Servers) == 0 {
 		return -1, errors.New("unexpected error when fetching serverlist: unexpected 0 server")
 	}
@@ -189,8 +187,12 @@ func ProxySpeedTest(p proxy.Proxy) (speedResult float64, err error) {
 	// Sort by distance
 	sort.Sort(ByDistance{serverList.Servers})
 
-	var targets Servers
-	targets = append(serverList.Servers[:3])
+	numServer := 3
+	if len(serverList.Servers) < 3 {
+		numServer = len(serverList.Servers)
+	}
+	targets := make(Servers, 0)
+	targets = append(targets, serverList.Servers[:numServer]...)
 
 	// Test
 	targets.StartTest(clashProxy)

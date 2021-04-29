@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
+	"sync"
+
 	"github.com/Dreamacro/clash/adapters/outbound"
 	"github.com/Sansui233/proxypool/log"
 	"github.com/Sansui233/proxypool/pkg/proxy"
 	"github.com/ivpusic/grpool"
-	"net"
-	"sync"
 )
 
 func RelayCheck(proxies proxy.ProxyList) {
@@ -113,8 +114,5 @@ func isRelay(src string, out string) bool {
 	ipv4Mask := net.CIDRMask(16, 32)
 	ip1 := net.ParseIP(src)
 	ip2 := net.ParseIP(out)
-	if fmt.Sprint(ip1.Mask(ipv4Mask)) == fmt.Sprint(ip2.Mask(ipv4Mask)) { // Pool
-		return false
-	}
-	return true
+	return fmt.Sprint(ip1.Mask(ipv4Mask)) != fmt.Sprint(ip2.Mask(ipv4Mask))
 }

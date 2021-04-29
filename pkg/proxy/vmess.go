@@ -46,6 +46,10 @@ type HTTP2Options struct {
 	Path string   `yaml:"path,omitempty" json:"path,omitempty"` // 暂只处理一个Path
 }
 
+// type GrpcOptions struct {
+// 	GrpcServiceName string `proxy:"grpc-service-name,omitempty"`
+// }
+
 func (v Vmess) Identifier() string {
 	return net.JoinHostPort(v.Server, strconv.Itoa(v.Port)) + v.Cipher + v.UUID
 }

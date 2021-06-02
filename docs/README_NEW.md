@@ -5,6 +5,10 @@ Clash客户端支持：
 
 ## New
 
+2021-06-03
+- 修复自定义timeout中send on closed channel问题 (v0.7.3)
+- 新增健康检测并发数配置（v0.7.2)
+
 2021-04-29
 - delaycheck中实现强制超时取消，以避免由于依赖问题引起的阻塞
 

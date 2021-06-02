@@ -87,10 +87,14 @@ func testDelay(p proxy.Proxy) (delay uint16, err error) {
 
 	// Custom context time to avoid unexpected connection block due to dependency
 	respC := make(chan uint16)
+	closed := false
 	defer close(respC)
 	go func() {
 		sTime := time.Now()
 		err = HTTPHeadViaProxy(clashProxy, "http://www.gstatic.com/generate_204")
+		if closed {
+			return
+		}
 		if err != nil {
 			respC <- 0
 			return
@@ -102,9 +106,11 @@ func testDelay(p proxy.Proxy) (delay uint16, err error) {
 
 	select {
 	case delay = <-respC:
+		closed = true
 		return delay, nil
-	case <-time.After(DelayTimeout * 3):
+	case <-time.After(DelayTimeout * 2):
 		log.Debugln("unexpected delay check timeout error in proxy %s\n", p.Link())
+		closed = true
 		return 0, context.DeadlineExceeded
 	}
 }

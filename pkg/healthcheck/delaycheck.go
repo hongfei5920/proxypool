@@ -103,7 +103,7 @@ func testDelay(p proxy.Proxy) (delay uint16, err error) {
 	select {
 	case delay = <-respC:
 		return delay, nil
-	case <-time.After(DelayTimeout * 2):
+	case <-time.After(DelayTimeout * 3):
 		log.Debugln("unexpected delay check timeout error in proxy %s\n", p.Link())
 		return 0, context.DeadlineExceeded
 	}

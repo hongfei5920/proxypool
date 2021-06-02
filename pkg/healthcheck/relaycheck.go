@@ -14,7 +14,13 @@ import (
 )
 
 func RelayCheck(proxies proxy.ProxyList) {
-	pool := grpool.NewPool(500, 200)
+	numWorker := DelayConn
+	numJob := 1
+	if numWorker > 4 {
+		numJob = (numWorker + 2) / 3
+	}
+
+	pool := grpool.NewPool(numWorker, numJob)
 	pool.WaitCount(len(proxies))
 	m := sync.Mutex{}
 

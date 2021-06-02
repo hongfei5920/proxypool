@@ -19,12 +19,12 @@ import (
 )
 
 // SpeedTestAll tests speed of a group of proxies. Results are stored in ProxyStats
-func SpeedTestAll(proxies []proxy.Proxy, conns int) {
+func SpeedTestAll(proxies []proxy.Proxy) {
 	SpeedExist = true
 	if ok := checkErrorProxies(proxies); !ok {
 		return
 	}
-	numWorker := conns
+	numWorker := SpeedConn
 	if numWorker <= 0 {
 		numWorker = 5
 	}
@@ -36,6 +36,7 @@ func SpeedTestAll(proxies []proxy.Proxy, conns int) {
 	m := sync.Mutex{}
 
 	log.Infoln("Speed Test ON")
+	log.Debugln("[speedcheck.go] connection: %d, timeout: %d", SpeedConn, SpeedTimeout)
 	doneCount := 0
 	dcm := sync.Mutex{}
 	// use grpool
@@ -75,12 +76,12 @@ func SpeedTestAll(proxies []proxy.Proxy, conns int) {
 }
 
 // SpeedTestNew tests speed of new proxies which is not in ProxyStats. Then appended to ProxyStats
-func SpeedTestNew(proxies []proxy.Proxy, conns int) {
+func SpeedTestNew(proxies []proxy.Proxy) {
 	SpeedExist = true
 	if ok := checkErrorProxies(proxies); !ok {
 		return
 	}
-	numWorker := conns
+	numWorker := SpeedConn
 	if numWorker <= 0 {
 		numWorker = 5
 	}
@@ -92,6 +93,7 @@ func SpeedTestNew(proxies []proxy.Proxy, conns int) {
 	m := sync.Mutex{}
 
 	log.Infoln("Speed Test ON")
+	log.Debugln("[speedcheck.go] connection: %d, timeout: %d", SpeedConn, SpeedTimeout)
 	doneCount := 0
 	// use grpool
 	pool := grpool.NewPool(numWorker, numJob)

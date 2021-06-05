@@ -75,14 +75,14 @@ func CrawlGo() {
 	cache.LastCrawlTime = time.Now().In(location).Format("2006-01-02 15:04:05")
 
 	// Health Check
+	log.Infoln("Now proceed proxy health check...")
 	healthcheck.SpeedConn = C.Config.SpeedConnection
 	healthcheck.DelayConn = C.Config.HealthCheckConnection
-
-	log.Infoln("Now proceed proxy health check...")
 	if C.Config.HealthCheckTimeout > 0 {
 		healthcheck.DelayTimeout = time.Second * time.Duration(C.Config.HealthCheckTimeout)
 		log.Infoln("CONF: Health check timeout is set to %d seconds", C.Config.HealthCheckTimeout)
 	}
+
 	proxies = healthcheck.CleanBadProxiesWithGrpool(proxies)
 
 	log.Infoln("CrawlGo clash usable proxy count: %d", len(proxies))
